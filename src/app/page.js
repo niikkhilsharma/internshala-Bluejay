@@ -68,8 +68,8 @@ export default function Home() {
 				</form>
 				<div className="flex flex-col justify-center items-center mt-20">
 					<h3 className="text-xl font-semibold">
-						Don't want to upload file then click here to test the output from the previously
-						uploaded file.
+						Don&apos;t want to upload file then click here to test the output from the
+						previously uploaded file.
 					</h3>
 					<Link
 						href="/read?fileName=Assignment_Timecard.xlsx"
