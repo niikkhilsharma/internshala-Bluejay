@@ -1,22 +1,32 @@
 import * as XLSX from 'xlsx/xlsx.mjs'
-import path from 'path'
-import { readFileSync } from 'fs'
-import { read } from 'xlsx/xlsx.mjs'
+
+import AWS from 'aws-sdk'
 
 import { NextResponse } from 'next/server'
 
 export async function GET(req) {
 	const { searchParams } = new URL(req.url)
 	const filter = searchParams.get('filter')
+	const fileName = searchParams.get('fileName')
 
-	const filePath = path.join(
-		process.cwd(),
-		'public/uploads',
-		'Assignment_Timecard.xlsx'
-	)
+	const bucketName = `${process.env.AWS_S3_BUCKET_NAME}`
 
-	const buf = readFileSync(filePath)
-	const workbook = read(buf, { cellDates: true })
+	// Configure AWS SDK
+	AWS.config.update({
+		accessKeyId: process.env.AWS_S3_ACCESS_KEY_ID,
+		secretAccessKey: process.env.AWS_S3_SECRET_ACCESS_KEY,
+		region: `${process.env.AWS_S3_REGION}`, // Replace with your actual AWS S3 region
+	})
+
+	const s3 = new AWS.S3()
+	const params = {
+		Bucket: bucketName,
+		Key: fileName,
+	}
+
+	const awsFile = await s3.getObject(params).promise()
+
+	const workbook = XLSX.read(awsFile.Body, { cellDates: true })
 	const sheetName = workbook.SheetNames[0]
 	const sheet = workbook.Sheets[sheetName]
 	const data = XLSX.utils.sheet_to_json(sheet)

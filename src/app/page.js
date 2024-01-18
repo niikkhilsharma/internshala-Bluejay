@@ -2,14 +2,17 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function Home() {
 	const [file, setFile] = useState(null)
+	const router = useRouter()
+	const [uploading, setUploading] = useState(false)
 
 	const handleSubmit = async e => {
 		e.preventDefault()
 		if (!file) return
-
+		setUploading(true)
 		const formData = new FormData()
 		formData.append('file', file)
 
@@ -21,7 +24,10 @@ export default function Home() {
 
 			const data = await response.json()
 			console.log(data.message)
+			router.push(`/read?fileName=${data.fileName}`)
 		} catch (error) {
+			setUploading(false)
+			alert('Error uploading file')
 			console.log(error)
 		}
 	}
@@ -30,34 +36,37 @@ export default function Home() {
 		setFile(e.target.files[0])
 	}
 
-	return (
-		<main className="w-full h-screen flex flex-col justify-center items-center">
-			<form onSubmit={handleSubmit}>
-				<input
-					type="file"
-					className="border border-black  m-4 p-4 rounded-xl"
-					name="uploaded_file"
-					onChange={handleFileChange}
-				/>
-				<Link href="/read">
+	if (uploading) {
+		return (
+			<div className="min-h-screen w-full flex flex-col justify-center items-center">
+				<div
+					className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"
+					role="status"
+				></div>
+				<span className="my-4 animate-ping">Uploading File</span>
+			</div>
+		)
+	}
+
+	if (!uploading) {
+		return (
+			<main className="w-full h-screen flex flex-col justify-center items-center">
+				<h1 className="text-center text-xl font-semibold">Please Upload your file here</h1>
+				<form onSubmit={handleSubmit}>
+					<input
+						type="file"
+						className="border border-black  m-4 p-4 rounded-xl"
+						name="uploaded_file"
+						onChange={handleFileChange}
+					/>
 					<button
 						type="submit"
 						className="bg-blue-500 p-5 rounded-xl text-white hover:bg-blue-600"
 					>
 						Submit
 					</button>
-				</Link>
-			</form>
-			<h3 className="text-xl text-center my-4 mt-8">
-				Already Upload then please click below to read Data
-			</h3>
-			<div>
-				<Link href="/read">
-					<button className="bg-blue-500 p-5 px-20 rounded-xl hover:bg-blue-600 text-white">
-						Read
-					</button>
-				</Link>
-			</div>
-		</main>
-	)
+				</form>
+			</main>
+		)
+	}
 }

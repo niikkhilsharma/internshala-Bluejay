@@ -1,7 +1,11 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 
 export default function Page() {
+	const searchParams = useSearchParams()
+	const fileName = searchParams.get('fileName')
+
 	const [filter, setFilter] = useState('none')
 	const [data, setData] = useState(null)
 	const [loading, setLoading] = useState(true)
@@ -11,7 +15,9 @@ export default function Page() {
 	useEffect(() => {
 		const getDate = async () => {
 			setLoading(true)
-			const data = await fetch(`/api/read?filter=${filter}`).then(res => res.json())
+			const data = await fetch(`/api/read?filter=${filter}&fileName=${fileName}`).then(
+				res => res.json()
+			)
 			setData(data.wholeFilteredData)
 			console.log(data.wholeFilteredData)
 			setLoading(false)
